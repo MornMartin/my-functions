@@ -4,7 +4,7 @@
  * @param handler 操作函数
  * @param delay 间隔时间
  * @param doFirst 是否先执行
- * @param latestParam 是否已最新函数执行
+ * @param latestParam 是否最新入参执行
  * @returns 防抖函数
  */
 export const deterShakeHandler = (handler, delay = 500, doFirst = false, latestParam = true) => {
