@@ -1,5 +1,5 @@
 /**
- * 对比两个对象/数组是否值相等
+ * 对比两个对象/数组是否值相等(相较于JSON字符串对比，能处理属性乱序后仍根据值相等而判断相等)
  * @param source 
  * @param target 
  * @param config 
