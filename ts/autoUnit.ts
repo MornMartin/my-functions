@@ -1,5 +1,5 @@
 /**
- * 
+ * 自动转换合适的单位
  * @param base data 原数值，unit 基准单位
  * @param units unit 单位，scale 与基准单位的换算比率
  * @param digits 保留小数位
