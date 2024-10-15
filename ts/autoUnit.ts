@@ -17,7 +17,8 @@ export const autoUnit = <T>(base: {data: number, unit: T}, units: {unit: T, scal
             {data: base.data * upper.scale, unit: upper.unit},
             sortted.map(item => {
                 return {...item, scale: item.scale / upper.scale}
-            })
+            }),
+			digits
         )
     }
     if(lower && base.data < 1) {// 向下单位换算
@@ -25,8 +26,29 @@ export const autoUnit = <T>(base: {data: number, unit: T}, units: {unit: T, scal
             {data: base.data * lower.scale, unit: lower.unit},
             sortted.map(item => {
                 return {...item, scale: item.scale / lower.scale}
-            })
+            }),
+			digits
         )
     }
     return {...base, data: Number(base.data.toFixed(digits))};
+}
+
+/**
+ * 自动转换字节单位
+ * @param byte 
+ * @returns 
+ */
+export const autoByte = (byte: number) => {
+    const { data, unit } = autoUnit(
+        {data: byte, unit: 'Byte'},
+        [
+            {unit: 'Byte', scale: Math.pow(0.1, 0)},
+            {unit: 'KB', scale: Math.pow(0.1, 3)},
+            {unit: 'MB', scale: Math.pow(0.1, 6)},
+            {unit: 'GB', scale: Math.pow(0.1, 9)},
+            {unit: 'TB', scale: Math.pow(0.1, 12)}
+        ],
+        1
+    )
+    return `${data} ${unit}`;
 }
