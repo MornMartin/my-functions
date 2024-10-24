@@ -12,7 +12,11 @@ const syncSizeRelStyles = (target: HTMLElement, source: HTMLElement) => {
     target.style.visibility = 'hidden';
     target.style.font = targetStyle.font;
     target.style.width = targetStyle.width;
+    target.style.minWidth = targetStyle.minWidth;
+    target.style.maxWidth = targetStyle.maxWidth;
     target.style.height = targetStyle.height;
+    target.style.minHeight = targetStyle.minHeight;
+    target.style.maxHeight = targetStyle.maxHeight;
     target.style.display = targetStyle.display;
     target.style.boxSizing = targetStyle.boxSizing;
     target.style.padding = targetStyle.padding;
@@ -22,6 +26,7 @@ const syncSizeRelStyles = (target: HTMLElement, source: HTMLElement) => {
     target.style.wordBreak = targetStyle.wordBreak;
     target.style.whiteSpace = targetStyle.whiteSpace;
 }
+
 /**
  * 设置文本内容
  * @param target 
@@ -34,6 +39,7 @@ const setInnerText = (target: HTMLElement, txt: string) => {
         target.append(el);
     });
 }
+
 /**
  * 格式化文本内容
  * @param txt 
@@ -42,6 +48,7 @@ const setInnerText = (target: HTMLElement, txt: string) => {
 const formatInnerTxt = (txt: string) => {
     return txt.replaceAll('\n', '').split('');
 }
+
 /**
  * 获取元素在容器中是否可见
  * @param el 查询目标元素
@@ -75,6 +82,7 @@ export const getElVisibility = (el: HTMLElement, parentRect: DOMRect, visibleRat
     const overflowY = isNoneOverflowY ? 'none' : isHalfOverflowY && "half" || 'total';
     return { overflowX, overflowY };
 }
+
 /**
  * 获取元素文字溢出索引
  * @param el 
@@ -118,21 +126,25 @@ export const getTextOverflowIndex = (el: HTMLElement) => {
     }
     return toGet(lastIndex, 0);
 }
+
 /**
  * 自动提示
  * @param source 
  */
-export const doAutoTip = (source: HTMLElement) => {
+export const doAutoTip = (source: HTMLElement, txt?: string) => {
+    const innerText = formatInnerTxt(txt ?? source.innerText);
+    if(!innerText.length) return;
     const virtualContainer = document.createElement(source.tagName);
     syncSizeRelStyles(virtualContainer, source);
-    setInnerText(virtualContainer, source.innerText);
+    setInnerText(virtualContainer, txt ?? source.innerText);
     document.body.append(virtualContainer);
     setTimeout(() => {// 等待虚拟容器加载完成
         const index = getTextOverflowIndex(virtualContainer);
-        const innerText = formatInnerTxt(source.innerText);
         if(index < innerText.length - 1) {
             source.innerText = innerText.slice(0, index - 3).join('').concat('...');
             source.title = innerText.join('');
+        }else{
+            source.innerText = innerText.join('');
         }
         virtualContainer.remove();
     })
