@@ -2,10 +2,12 @@
 
 #根目录
 rootpath=$(pwd)
-#源码目录
-source_codes="$rootpath/source_codes"
 #分支名称
-git_branch_name="master"
+git_branch_name="${1:-'master'}"
+#源码目录
+source_codes="$rootpath/$git_branch_name"
+
+echo git_branch_name：$git_branch_name
 
 #工程列表
 projects=(
