@@ -16,21 +16,24 @@ user_map["xxx"]=xxx
 user_map["xxx1"]=xxx
 
 # 代码统计列表
-declare -A line_map
+declare -A commit_map
 
 function get_log(){
   git_log=$(git log --all --since =$git_log_since --until==$git_log_until --author=$1 --pretty=short)
   echo $git_log
 }
-function get_commit_msg(){
-  git_commit=$(git show $1 --stat|grep insertion)
-  echo "$git_commit"
+
+function get_changes_msg(){
+  git_changes=$(git show $1 --stat|grep insertion)
+  echo "$git_changes"
 }
+
 function get_note(){
   cut_str=$1
   git_note=$(git show $1 --stat --oneline |grep ${cut_str:0:7})
   echo "$git_note"
 }
+
 function get_branch_name(){
   echo "$(git branch -r --contains $1)"
 }
@@ -50,26 +53,26 @@ function export_data() {
         if [ -n "$git_log" ]; then
           IFS=' ' read -ra array <<< "$git_log"
           status=0
-          for line in "${array[@]}"; do
-            if [[ "$line" == "commit" ]];then
+          for commit in "${array[@]}"; do
+            if [[ "$commit" == "commit" ]];then
               status=1
             else
               if [[ "$status" == "1" ]];then
-                if [ -z ${line_map[$line]} ]; then
-                  line_map["$line"]=1
+                if [ -z ${commit_map[$commit]} ]; then
+                  commit_map["$commit"]=1
                 else
-                  echo "重复数据：" $line
+                  echo "重复数据：" $commit
                   status=0
                   continue
                 fi
-                commit=$(get_commit_msg $line )
-                note=$(get_note $line )
-                branch_name=$(get_branch_name $line )
-                IFS=',' read -ra commit_array <<< "$commit"
+                changes=$(get_changes_msg $commit )
+                note=$(get_note $commit )
+                branch_name=$(get_branch_name $commit )
+                IFS=',' read -ra commit_array <<< "$changes"
                 for sub in "${commit_array[@]}"; do 
                   if [[ "$sub" == *"+"* ]];then
                     add_num=$(echo $sub|awk -F" " '{print $1}')
-                    echo "$add_num!$author!${user_map[$author]}!$line!$commit!$note!$path" >> $rootpath/logs
+                    echo "${add_num, -0},${author, -'-'},${user_map[$author],-"-"},${commit, -'-'},${changes, -'-'},${note, -'-'},${path, -'-'}" >> $rootpath/logs.csv
                   fi
                 done
               fi
@@ -80,8 +83,9 @@ function export_data() {
       fi
     done
 }
-rm -rf $rootpath/logs
-touch $rootpath/logs
+
+rm -rf $rootpath/logs.csv
+touch $rootpath/logs.csv
 for dir in $(ls $source_codes); do
     export_data $dir;
 done
