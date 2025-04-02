@@ -20,18 +20,18 @@ declare -A commit_map
 
 function get_log(){
   git_log=$(git log --all --since =$git_log_since --until==$git_log_until --author=$1 --pretty=short)
-  echo $git_log
+  echo "${git_log//,/ }"
 }
 
 function get_changes_msg(){
   git_changes=$(git show $1 --stat|grep insertion)
-  echo "$git_changes"
+  echo "${git_changes//,/ }"
 }
 
 function get_note(){
   cut_str=$1
   git_note=$(git show $1 --stat --oneline |grep ${cut_str:0:7})
-  echo "$git_note"
+  echo "${git_note//,/ }"
 }
 
 function get_branch_name(){
