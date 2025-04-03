@@ -4,6 +4,8 @@
 rootpath=$(pwd)
 #源码目录
 source_codes=$rootpath
+#日志文件
+export_file="logs.csv"
 #统计时段
 git_log_since="${1:-'2025-01-01'}"
 git_log_until="${2:-'2025-03-31'}"
@@ -23,16 +25,16 @@ function get_log(){
 }
 
 function get_authors() {
-  echo $(git log --all --format="%aN" --since=$git_log_since --until=$git_log_until | sort -u)
+  echo $(git log --all --since=$git_log_since --until=$git_log_until --format="%aN" | sort -u)
 }
 
 function get_changes(){
-  echo $(git show $1 --stat|grep insertion)
+  echo $(git show $1 --stat | grep -i changed)
 }
 
 function get_note(){
   cut_str=$1
-  echo $(git show $1 --stat --oneline |grep ${cut_str:0:7})
+  echo $(git show $1 --stat --oneline | grep ${cut_str:0:7})
 }
 
 function get_date() {
@@ -42,6 +44,7 @@ function get_date() {
 function get_branch_name(){
   echo "$(git branch -r --contains $1)"
 }
+
 function export_data() {
 	path=$1;
     echo "进入目录：" $source_codes/$path;
@@ -73,11 +76,14 @@ function export_data() {
                 branch_name=$(get_branch_name $commit | sed 's/,//g')
                 date=$(get_date $commit| sed 's/,//g')
                 changes=$(get_changes $commit)
+                add_num="0"
                 # eg: 2 files changed, 50 insertions(+), 19 deletions(-)
-                IFS=',' read -ra changes_array <<< "$changes"
-                add_num=$(echo ${changes_array[1]} | awk -F " " '{print $1}')
+                if [[ "${changes//[^\+]/}" != "" ]]; then # 判断是否具有添加行
+                  IFS=',' read -ra changes_array <<< "$changes"
+                  add_num=$(echo ${changes_array[1]} | awk -F " " '{print $1}')
+                fi
                 changes_info=$(echo $changes | sed 's/,//g')
-                echo "${add_num},${author},${user_map[$author]},${commit},${date},${changes_info},${note},${path}" >> $rootpath/logs.csv
+                echo "${add_num},${author},${user_map[$author]},${commit},${date},${changes_info},${note},${path}" >> $rootpath/$export_file
               fi
               status=0
             fi
@@ -87,8 +93,8 @@ function export_data() {
     done
 }
 
-rm -rf $rootpath/logs.csv
-touch $rootpath/logs.csv
+rm -rf $rootpath/$export_file
+touch $rootpath/$export_file
 for dir in $(ls $source_codes); do
     export_data $dir;
 done
