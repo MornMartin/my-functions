@@ -21,11 +21,11 @@ user_map["xxx1"]=xxx
 declare -A commit_map
 
 function get_log(){
-  echo $(git log --all --since=$git_log_since --until=$git_log_until --author=$1 --pretty=short)
+  echo $(git log --since=$git_log_since --until=$git_log_until --author=$1 --pretty=short)
 }
 
 function get_authors() {
-  echo $(git log --all --since=$git_log_since --until=$git_log_until --format="%aN" | sort -u)
+  echo $(git log --since=$git_log_since --until=$git_log_until --format="%aN" | sort -u)
 }
 
 function get_changes(){
