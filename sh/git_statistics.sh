@@ -19,34 +19,38 @@ user_map["xxx1"]=xxx
 declare -A commit_map
 
 function get_log(){
-  git_log=$(git log --all --since =$git_log_since --until==$git_log_until --author=$1 --pretty=short)
-  echo "${git_log//,/ }"
+  echo $(git log --all --since=$git_log_since --until=$git_log_until --author=$1 --pretty=short)
 }
 
-function get_changes_msg(){
-  git_changes=$(git show $1 --stat|grep insertion)
-  echo "${git_changes//,/ }"
+function get_authors() {
+  echo $(git log --all --format="%aN" --since=$git_log_since --until=$git_log_until | sort -u)
+}
+
+function get_changes(){
+  echo $(git show $1 --stat|grep insertion)
 }
 
 function get_note(){
   cut_str=$1
-  git_note=$(git show $1 --stat --oneline |grep ${cut_str:0:7})
-  echo "${git_note//,/ }"
+  echo $(git show $1 --stat --oneline |grep ${cut_str:0:7})
+}
+
+function get_date() {
+  echo $(git show $1 -s --format=%cd --date=format:'%Y-%m-%d %H:%M')
 }
 
 function get_branch_name(){
   echo "$(git branch -r --contains $1)"
 }
-
 function export_data() {
 	path=$1;
     echo "进入目录：" $source_codes/$path;
     cd $source_codes/$path;
     
-    authors=$(git log --all --format="%aN" | sort -u)
+    authors=$(get_authors)
     IFS=' ' read -ra author_array <<< "`echo $authors`"
     for author in "${author_array[@]}"; do
-      if [[ -n $(echo $author |grep @) ]] || [[ -z ${user_map[$author]} ]]; then
+      if [[ -n $(echo $author | grep @) ]] || [[ -z ${user_map[$author]} ]]; then
         echo "未识别用户："$author""
       else
         git_log=$(get_log $author)
@@ -65,16 +69,15 @@ function export_data() {
                   status=0
                   continue
                 fi
-                changes=$(get_changes_msg $commit )
-                note=$(get_note $commit )
-                branch_name=$(get_branch_name $commit )
-                IFS=',' read -ra commit_array <<< "$changes"
-                for sub in "${commit_array[@]}"; do 
-                  if [[ "$sub" == *"+"* ]];then
-                    add_num=$(echo $sub|awk -F" " '{print $1}')
-                    echo "${add_num, -0},${author, -'-'},${user_map[$author],-"-"},${commit, -'-'},${changes, -'-'},${note, -'-'},${path, -'-'}" >> $rootpath/logs.csv
-                  fi
-                done
+                note=$(get_note $commit | sed 's/,//g')
+                branch_name=$(get_branch_name $commit | sed 's/,//g')
+                date=$(get_date $commit| sed 's/,//g')
+                changes=$(get_changes $commit)
+                # eg: 2 files changed, 50 insertions(+), 19 deletions(-)
+                IFS=',' read -ra changes_array <<< "$changes"
+                add_num=$(echo ${changes_array[1]} | awk -F " " '{print $1}')
+                changes_info=$(echo $changes | sed 's/,//g')
+                echo "${add_num},${author},${user_map[$author]},${commit},${date},${changes_info},${note},${path}" >> $rootpath/logs.csv
               fi
               status=0
             fi
