@@ -38,21 +38,28 @@ function set_date_format() {
 	echo 归档格式：$date_format;
 }
 
+# 归档文件
+function archive_file() {
+	file=$1
+	dir=$2
+	echo "$file" "-->" "$rootpath/$dir";
+	if [ -z ${dir_map["$dir"]} ]; then
+		# 目录不存在时创建目录
+		mkdir $rootpath/$dir;
+		mv $rootpath/$file $rootpath/$dir;
+	else
+		# 目录存在时移动文件
+		mv $rootpath/$file $rootpath/$dir;
+	fi
+	dir_map["$dir"]=true;
+}
+
 # 通过日期归档文件
 function archive_by_date() {
 	for file in `find $rootpath -maxdepth 1 -type f -not -name "*.sh" -printf "%f\n"`;
 	do
 		mtime=$(ls "$rootpath/$file" -l --time-style=$date_format  | awk '{print $6}');
-		echo "$file" "-->" "$rootpath/$mtime";
-		if [ -z ${dir_map["$mtime"]} ]; then
-			# 目录不存在时创建目录
-			mkdir $rootpath/$mtime;
-			mv $file $rootpath/$mtime;
-		else
-			# 目录存在时移动文件
-			mv $file $rootpath/$mtime;
-		fi
-		dir_map["$mtime"]=true;
+		archive_file $file $mtime;
 	done
 }
 
@@ -61,17 +68,8 @@ function archive_by_suffix() {
 	for file in `find $rootpath -maxdepth 1 -type f -not -name "*.sh" -printf "%f\n"`;
 	do
 		IFS='.' read -ra suffixes <<< "`echo $file`";
-		suffix=${suffixes[-1]}
-		echo "$file" "-->" "$rootpath/$suffix";
-		if [ -z ${dir_map["$suffix"]} ]; then
-			# 目录不存在时创建目录
-			mkdir $rootpath/$suffix;
-			mv $file $rootpath/$suffix;
-		else
-			# 目录存在时移动文件
-			mv $file $rootpath/$suffix;
-		fi
-		dir_map["$suffix"]=true;
+		suffix=${suffixes[-1]};
+		archive_file $file $suffix;
 	done
 }
 
