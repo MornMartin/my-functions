@@ -46,11 +46,8 @@ function archive_file() {
 	if [ -z ${dir_map["$dir"]} ]; then
 		# 目录不存在时创建目录
 		mkdir $rootpath/$dir;
-		mv $rootpath/$file $rootpath/$dir;
-	else
-		# 目录存在时移动文件
-		mv $rootpath/$file $rootpath/$dir;
 	fi
+	mv $rootpath/$file $rootpath/$dir;
 	dir_map["$dir"]=true;
 }
 
