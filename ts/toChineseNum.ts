@@ -56,15 +56,18 @@ export const toChineseNum = (num: number | string): string => {
         return `${transedAfterTenThousands}${ isAfterTenThousandZero ? '' : wan }${isBeforeTenThousandZero ? '' : `${isBeforeTenThousandsFix}${transedBeforeTenThousands}`}`;
     });
     const dropRedundantZero = (num: string): string => {
+        const startZero = new RegExp(`^${zeroStr}+`);
+        const endZero = new RegExp(`${zeroStr}+\$`);
+        const repeatedZero = new RegExp(`${zeroStr}{2}`, 'g');
+        // 去除首尾的零/去除重复零
+        const result = num.replace(startZero, '').replace(endZero, '').replaceAll(repeatedZero, zeroStr);
         const betweenZero = new RegExp(`[${yi}${wan}]${zeroStr}+[${yi}${wan}]`, 'g');
-        if(betweenZero.test(num)) {// 去除万/亿中间的零
-            return dropRedundantZero(num.replaceAll(betweenZero, e =>{
+        if(betweenZero.test(result)) {// 去除万/亿中间的零
+            return dropRedundantZero(result.replaceAll(betweenZero, e =>{
                 return e.replaceAll(new RegExp(`${zeroStr}+`, 'g'), '');
             }))
         }
-        return num
-        .replaceAll(new RegExp(`^${zeroStr}|${zeroStr}\$`, 'g'), '')// 去除首尾的零
-        .replaceAll(new RegExp(`${zeroStr}{2}`, 'g'), zeroStr)// 去除重复零
+        return result;
     }
     return dropRedundantZero(hundredMillions.join(yi)) || zeroStr;
 }
