@@ -5,32 +5,32 @@
  * @param digits 保留小数位
  * @returns 
  */
-export const autoUnit = <T>(base: {data: number, unit: T}, units: {unit: T, scale: number}[], digits = 3): {data: number, unit: T} => {
+export const autoUnit = <T>(base: { data: number, unit: T }, units: { unit: T, scale: number }[], digits = 3): { data: number, unit: T } => {
     const sortted = [...units].sort((a, b) => {// 单位从大到小排序
         return a.scale - b.scale;
     })
     const unitLevel = sortted.findIndex(e => e.unit === base.unit);
     const upper = sortted[unitLevel - 1];
     const lower = sortted[unitLevel + 1];
-    if(upper && base.data * upper.scale > 1) {// 向上单位换算
+    if (upper && base.data * upper.scale > 1) {// 向上单位换算
         return autoUnit(
-            {data: base.data * upper.scale, unit: upper.unit},
+            { data: base.data * upper.scale, unit: upper.unit },
             sortted.map(item => {
-                return {...item, scale: item.scale / upper.scale}
+                return { ...item, scale: item.scale / upper.scale }
             }),
-			digits
+            digits
         )
     }
-    if(lower && base.data < 1) {// 向下单位换算
+    if (lower && base.data < 1) {// 向下单位换算
         return autoUnit(
-            {data: base.data * lower.scale, unit: lower.unit},
+            { data: base.data * lower.scale, unit: lower.unit },
             sortted.map(item => {
-                return {...item, scale: item.scale / lower.scale}
+                return { ...item, scale: item.scale / lower.scale }
             }),
-			digits
+            digits
         )
     }
-    return {...base, data: Number(base.data.toFixed(digits))};
+    return { ...base, data: Number(base.data.toFixed(digits)) };
 }
 
 /**
@@ -40,13 +40,13 @@ export const autoUnit = <T>(base: {data: number, unit: T}, units: {unit: T, scal
  */
 export const autoByte = (byte: number) => {
     const { data, unit } = autoUnit(
-        {data: byte, unit: 'Byte'},
+        { data: byte, unit: 'Byte' },
         [
-            {unit: 'Byte', scale: Math.pow(0.1, 0)},
-            {unit: 'KB', scale: Math.pow(0.1, 3)},
-            {unit: 'MB', scale: Math.pow(0.1, 6)},
-            {unit: 'GB', scale: Math.pow(0.1, 9)},
-            {unit: 'TB', scale: Math.pow(0.1, 12)}
+            { unit: 'Byte', scale: 1 / Math.pow(1024, 0) },
+            { unit: 'KB', scale: 1 / Math.pow(1024, 1) },
+            { unit: 'MB', scale: 1 / Math.pow(1024, 2) },
+            { unit: 'GB', scale: 1 / Math.pow(1024, 3) },
+            { unit: 'TB', scale: 1 / Math.pow(1024, 4) }
         ],
         1
     )
