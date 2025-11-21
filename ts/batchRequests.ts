@@ -1,7 +1,7 @@
 
-export interface IRequest<D, E> {
+interface IRequest<D, E> {
     id: string | number;
-    hanlder: () => Promise<any>;
+    handler: () => Promise<any>;
     retry: number;
     res?: D;
     err?: E;
@@ -14,7 +14,7 @@ export interface IRequest<D, E> {
  * @param concurrency 最大并发数量
  * @param isBreakWhenFailure 失败时是否中断后续请求
  */
-export const batchRequests = <D, E>(requestList: IRequest<D, E>['hanlder'][], maxRetry = 3, concurrency = 6, isBreakWhenFailure = true) => {
+export const batchRequests = <D, E>(requestList: IRequest<D, E>['handler'][], maxRetry = 3, concurrency = 6, isBreakWhenFailure = true) => {
     if (concurrency < 1) return Promise.reject('并发数不能小于1');
     return new Promise((resolve, reject) => {
         const idList: IRequest<D, E>['id'][] = [];
@@ -48,9 +48,9 @@ export const batchRequests = <D, E>(requestList: IRequest<D, E>['hanlder'][], ma
             }
         }
         const doRequest = (request: IRequest<D, E>) => {
-            const { id, hanlder, retry } = request;
+            const { id, handler, retry } = request;
             setRequest(request, 'loading');
-            hanlder()
+            handler()
                 .then((res) => {
                     setRequest({ ...request, res }, 'success');
                 })
@@ -97,7 +97,7 @@ export const batchRequests = <D, E>(requestList: IRequest<D, E>['hanlder'][], ma
         requestList.forEach((item, index) => {
             const id = index;
             idList.push(id);// 按顺序记录请求标识；
-            setRequest({ id, retry: 0, hanlder: item }, 'pending');
+            setRequest({ id, retry: 0, handler: item }, 'pending');
         });
         doNextRequest();
     })
