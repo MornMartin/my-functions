@@ -64,7 +64,6 @@ export const batchRequests = <D, E>(requestList: IRequest<D, E>['handler'][], ma
                     }
                 })
                 .finally(() => {
-                    console.log('finally');
                     doNextRequest();
                 });
         }

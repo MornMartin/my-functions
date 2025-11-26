@@ -6,36 +6,38 @@
  * @returns
  */
 export const compare = (
-		source: any,
-		target: any,
-		config: {
-			isStrict?: boolean;
-			handleEqual?: (a: any, b: any) => boolean,
-			onNotEqual?: (source, target, paths?: string[]) => void;
-		} = { isStrict: true }
-	): boolean => {
-	const getValue = (obj, path) => {
+	source: any,
+	target: any,
+	config: {
+		isStrict?: boolean;
+		handleEqual?: (a: any, b: any) => boolean,
+		onNotEqual?: (source: any, target: any, paths?: string[]) => void;
+	} = { isStrict: true }
+): boolean => {
+	const getValue = (obj: any, path: string) => {
 		try {
 			return obj[path];
 		} catch {
 			return undefined;
 		}
 	};
-	const onNotEqual = (a, b, paths?: string[]) => {
+	const onNotEqual = (a: any, b: any, paths?: string[]) => {
 		try {
 			typeof config.onNotEqual === "function" && config.onNotEqual(a, b, paths);
 		} catch (err) {
 			console.error(err);
 		}
 	};
-	const doCompareSimple = (a, b, paths: string[] = []) => {
+	const doCompareSimple = (a: any, b: any, paths: string[] = []) => {
 		const isEqual = typeof config.handleEqual === 'function' ? config.handleEqual(a, b) : (config.isStrict ? a === b : a == b);
 		if (!isEqual) {
 			onNotEqual(a, b, paths);
 		}
 		return isEqual;
 	};
-	const doCompareObject = (a, b, paths: string[] = [], isNeedReversed = true) => {
+	const doCompareObject = (a: Record<string, any>, b: any, paths: string[] = [], isNeedReversed = true) => {
+		// a为非空对象，b为空对象时
+		if (!b) return false;
 		const keys = Object.keys(a);
 		for (let i = 0, key; (key = keys[i]); i++) {
 			const sourceValue = getValue(a, key);
